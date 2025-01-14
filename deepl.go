@@ -11,6 +11,8 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/bytedance/sonic"
+
 	httpi "github.com/solarhell/deepl/http"
 )
 
@@ -260,13 +262,22 @@ func (c *Client) TranslateMany(ctx context.Context, texts []string, targetLang L
 	}
 	defer resp.Body.Close()
 
+	bs, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read response body: %w", err)
+	}
+
 	if resp.StatusCode != http.StatusOK {
-		return nil, Error{Code: resp.StatusCode}
+		return nil, Error{
+			Code: resp.StatusCode,
+			Body: bs,
+		}
 	}
 
 	var response translateResponse
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return nil, fmt.Errorf("decode deepl response: %w", err)
+	err = sonic.Unmarshal(bs, &response)
+	if err != nil {
+		return nil, fmt.Errorf("decode deepl response: %w, body: %s", err, string(bs))
 	}
 
 	return response.Translations, nil
