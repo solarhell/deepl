@@ -8,13 +8,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bounoable/deepl"
-	mock_http "github.com/bounoable/deepl/http/mocks"
 	"github.com/golang/mock/gomock"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/ghttp"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/solarhell/deepl"
+	mock_http "github.com/solarhell/deepl/http/mocks"
 )
 
 var _ = Describe("Client.Translate", func() {
@@ -83,10 +84,9 @@ var _ = Describe("Client.Translate", func() {
 
 	itAddsTheRequiredFields(&request, &targetLang)
 
-	It("adds the source text", func(done Done) {
+	It("adds the source text", func(ctx SpecContext) {
 		req := <-request
 		Ω(req.FormValue("text")).Should(Equal(sourceText))
-		close(done)
 	})
 
 	itHandlesOptions(&request, &opts)
@@ -120,16 +120,14 @@ var _ = Describe("Client.Translate", func() {
 			]}`
 		})
 
-		It("returns the translated text", func(done Done) {
+		It("returns the translated text", func(ctx SpecContext) {
 			<-request
 			Ω(resultText).Should(Equal("Dies ist ein Beispieltext."))
-			close(done)
 		})
 
-		It("returns the detected source language", func(done Done) {
+		It("returns the detected source language", func(ctx SpecContext) {
 			<-request
 			Ω(resultSourceLang).Should(Equal(deepl.English))
-			close(done)
 		})
 	})
 })
@@ -198,10 +196,9 @@ var _ = Describe("Client.TranslateMany", func() {
 
 	itAddsTheRequiredFields(&request, &targetLang)
 
-	It("adds the source texts", func(done Done) {
+	It("adds the source texts", func(ctx SpecContext) {
 		req := <-request
 		Ω(req.Form["text"]).Should(Equal(sourceTexts))
-		close(done)
 	})
 
 	itHandlesOptions(&request, &opts)
@@ -220,34 +217,30 @@ var _ = Describe("Client.TranslateMany", func() {
 			]}`
 		})
 
-		It("returns the translations", func(done Done) {
+		It("returns the translations", func(ctx SpecContext) {
 			<-request
 			Ω(resultTranslations).Should(Equal([]deepl.Translation{
 				{DetectedSourceLanguage: "EN", Text: "Dies ist ein Beispiel."},
 				{DetectedSourceLanguage: "FR", Text: "Dies ist ein anderer Text."},
 			}))
-			close(done)
 		})
 	})
 })
 
 func itAddsTheRequiredFields(request *chan *http.Request, targetLang *deepl.Language) {
-	It("adds the auth key", func(done Done) {
+	It("adds the auth key", func(ctx SpecContext) {
 		req := <-*request
 		Ω(req.Header.Get("Authorization")).Should(Equal("DeepL-Auth-Key an-auth-key"))
-		close(done)
 	})
 
-	It("uses the correct content-type", func(done Done) {
+	It("uses the correct content-type", func(ctx SpecContext) {
 		req := <-*request
 		Ω(req.Header.Get("Content-Type")).Should(Equal("application/x-www-form-urlencoded"))
-		close(done)
 	})
 
-	It("adds the target lang", func(done Done) {
+	It("adds the target lang", func(ctx SpecContext) {
 		req := <-*request
 		Ω(req.FormValue("target_lang")).Should(Equal(string(*targetLang)))
-		close(done)
 	})
 }
 
@@ -257,10 +250,9 @@ func itHandlesOptions(request *chan *http.Request, opts *[]deepl.TranslateOption
 			*opts = append(*opts, deepl.SourceLang(deepl.English))
 		})
 
-		It("adds the source lang", func(done Done) {
+		It("adds the source lang", func(ctx SpecContext) {
 			req := <-*request
 			Ω(req.FormValue("source_lang")).Should(Equal(string(deepl.English)))
-			close(done)
 		})
 	})
 
@@ -269,10 +261,9 @@ func itHandlesOptions(request *chan *http.Request, opts *[]deepl.TranslateOption
 			*opts = append(*opts, deepl.SplitSentences(deepl.SplitNone))
 		})
 
-		It("adds the split_sentences option", func(done Done) {
+		It("adds the split_sentences option", func(ctx SpecContext) {
 			req := <-*request
 			Ω(req.FormValue("split_sentences")).Should(Equal(deepl.SplitNone.Value()))
-			close(done)
 		})
 	})
 
@@ -281,10 +272,9 @@ func itHandlesOptions(request *chan *http.Request, opts *[]deepl.TranslateOption
 			*opts = append(*opts, deepl.PreserveFormatting(true))
 		})
 
-		It("adds the preserve_formatting option", func(done Done) {
+		It("adds the preserve_formatting option", func(ctx SpecContext) {
 			req := <-*request
 			Ω(req.FormValue("preserve_formatting")).Should(Equal("1"))
-			close(done)
 		})
 	})
 
@@ -293,10 +283,9 @@ func itHandlesOptions(request *chan *http.Request, opts *[]deepl.TranslateOption
 			*opts = append(*opts, deepl.Formality(deepl.LessFormal))
 		})
 
-		It("adds the formality option", func(done Done) {
+		It("adds the formality option", func(ctx SpecContext) {
 			req := <-*request
 			Ω(req.FormValue("formality")).Should(Equal(deepl.LessFormal.Value()))
-			close(done)
 		})
 	})
 }
@@ -320,12 +309,11 @@ func itHandlesErrors(request *chan *http.Request, mockDeeplHeader *int, resultEr
 					*mockDeeplHeader = code
 				})
 
-				It("returns an error with a code", func(done Done) {
+				It("returns an error with a code", func(ctx SpecContext) {
 					<-*request
 					var deeplError deepl.Error
 					Ω(errors.As(*resultError, &deeplError)).Should(BeTrue())
 					Ω(deeplError.Code).Should(Equal(code))
-					close(done)
 				})
 			})
 		}

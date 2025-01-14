@@ -5,8 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/bounoable/deepl"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/solarhell/deepl"
 )
 
 func TestSourceLang(t *testing.T) {

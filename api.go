@@ -12,6 +12,8 @@ type Translation struct {
 	Text                   string `json:"text"`
 	// BilledCharacters has the value only if ShowBilledChars(true) option was set.
 	BilledCharacters int `json:"billed_characters"`
+	// ModelTypeUsed has the value only if ProV2 api was used.
+	ModelTypeUsed string `json:"model_type_used"`
 }
 
 // Glossary as per

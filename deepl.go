@@ -6,17 +6,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
 
-	httpi "github.com/bounoable/deepl/http"
+	httpi "github.com/solarhell/deepl/http"
 )
 
 const (
-	// V2 is the base url for v2 of the deepl API.
-	V2 = "https://api.deepl.com/v2"
+	ProV2  = "https://api.deepl.com/v2"
+	FreeV2 = "https://api-free.deepl.com/v2"
 )
 
 // A Client is a deepl client.
@@ -139,7 +139,7 @@ func New(authKey string, opts ...ClientOption) *Client {
 	}
 
 	// default base url
-	BaseURL(V2)(&c)
+	BaseURL(ProV2)(&c)
 
 	for _, opt := range opts {
 		opt(&c)
@@ -241,6 +241,11 @@ func (c *Client) TranslateMany(ctx context.Context, texts []string, targetLang L
 		opt(vals)
 	}
 
+	if c.BaseURL() == ProV2 {
+		// https://developers.deepl.com/docs/api-reference/translate#about-the-model_type-parameter
+		vals.Set("model_type", "prefer_quality_optimized")
+	}
+
 	req, err := http.NewRequestWithContext(ctx, "POST", c.translateURL, strings.NewReader(vals.Encode()))
 	if err != nil {
 		return nil, fmt.Errorf("build request: %w", err)
@@ -268,7 +273,7 @@ func (c *Client) TranslateMany(ctx context.Context, texts []string, targetLang L
 }
 
 func errorFromResp(r *http.Response) error {
-	b, err := ioutil.ReadAll(r.Body)
+	b, err := io.ReadAll(r.Body)
 	if err != nil {
 		return fmt.Errorf("read response body: %w", err)
 	}

@@ -3,8 +3,9 @@ package deepl_test
 import (
 	"testing"
 
-	"github.com/bounoable/deepl"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/solarhell/deepl"
 )
 
 func TestFormality_Value_String(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/bounoable/deepl"
+	"github.com/solarhell/deepl"
 )
 
 func ExampleClient_Translate() {
@@ -17,7 +17,7 @@ func ExampleClient_Translate() {
 	if err != nil {
 		var deeplError deepl.Error
 		if errors.As(err, &deeplError) {
-			log.Fatal(fmt.Sprintf("deepl api error code %d: %s", deeplError.Code, deeplError.Error()))
+			log.Fatalf("deepl api error code %d: %s", deeplError.Code, deeplError.Error())
 		}
 		log.Fatal(err)
 	}

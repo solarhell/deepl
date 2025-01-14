@@ -5,9 +5,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/bounoable/deepl"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/solarhell/deepl"
 )
 
 func TestTranslate_withoutSourceLang(t *testing.T) {
